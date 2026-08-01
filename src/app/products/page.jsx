@@ -1,5 +1,5 @@
 import AppLayout from "@/components/AppLayout";
-import ProductPage from "@/components/ProductPage";
+import ProductPage from "./ProductPage";
 
 export default function ProductsRoute() {
   return (
