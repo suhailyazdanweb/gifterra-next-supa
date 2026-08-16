@@ -1,6 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductDetailPage({ product }) {
+  const { addToCart, removeFromCart, isInCart } = useCart();
+  const inCart = isInCart(product.id);
+
+  const handleCartToggle = () => {
+    if (inCart) {
+      removeFromCart(product.id);
+      return;
+    }
+
+    addToCart(product);
+  };
+
   return (
     <div className="space-y-6 rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -30,8 +45,15 @@ export default function ProductDetailPage({ product }) {
             <p className="text-sm font-medium text-slate-500">Price</p>
             <p className="text-3xl font-semibold text-slate-950">{product.price}</p>
             <div className="flex flex-wrap gap-3">
-              <button className="rounded-full bg-cyan-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700">
-                Add to Gifpack
+              <button
+                onClick={handleCartToggle}
+                className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+                  inCart
+                    ? "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    : "bg-cyan-600 text-white hover:bg-cyan-700"
+                }`}
+              >
+                {inCart ? "Remove from Cart" : "Add to Cart"}
               </button>
               <button className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                 Customize

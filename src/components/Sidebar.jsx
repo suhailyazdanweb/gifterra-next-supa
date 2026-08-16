@@ -9,7 +9,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+    <aside className="rounded-[16px] border border-slate-200 bg-white p-6 shadow-sm">
       <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-700">Price range</p>
       <ul className="mt-6 space-y-3 text-sm text-slate-700">
         {categories.map((category) => (
