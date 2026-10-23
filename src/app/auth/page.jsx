@@ -8,7 +8,8 @@ export default async function AuthPage({ searchParams }) {
     typeof requestedNext === "string" &&
     (requestedNext.startsWith("/products") ||
       requestedNext.startsWith("/cart") ||
-      requestedNext.startsWith("/orders")) &&
+    requestedNext.startsWith("/orders") ||
+    requestedNext.startsWith("/profile")) &&
     !requestedNext.startsWith("//")
       ? requestedNext
       : "/products";

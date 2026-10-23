@@ -18,6 +18,19 @@ The public landing page is at `/`. The active product catalog and product detail
 
 When deploying, add the deployed site's `/auth/callback` URL to Supabase's Redirect URLs. The app uses only the publishable key; never expose a service-role key in browser code or commit credentials.
 
+## Profiles and saved addresses
+
+The authenticated `/profile` page stores personal details and delivery addresses in `public.profiles` and `public.addresses`. Profile images use the private `gifterra-avatars` Storage bucket. Row Level Security and Storage policies restrict each record and image path to its owner.
+
+To add these features to Supabase:
+
+1. Open **SQL Editor → New query** in the Supabase dashboard.
+2. Run [`supabase/migrations/20261023000000_user_profiles_addresses.sql`](./supabase/migrations/20261023000000_user_profiles_addresses.sql). This creates the profile/address tables, ownership policies, the signup profile trigger, and a private avatar bucket. It does not modify products or order data.
+3. In **Authentication → URL Configuration**, include the app's `/auth/callback` URL in the Redirect URLs, as described above.
+4. For account deletion, configure `SUPABASE_SERVICE_ROLE_KEY` as a server-side environment variable in local development and deployment. It is used only by the server-side account deletion route; do not prefix it with `NEXT_PUBLIC_`, commit it, or expose it in client code. If it is not configured, account deletion is deliberately unavailable.
+
+The project currently has no database-backed orders or wishlist. Checkout order history is stored in browser local storage and is not presented as account history; wishlist and notification preferences are not available.
+
 ## Product catalog and admin panel
 
 The catalog is read from `public.products`; product images are stored in the public `product-images` Storage bucket. Anyone can read active products. Only accounts whose trusted `auth.users.raw_app_meta_data.role` is `admin` can manage products or upload/delete images. The bucket is public so storefront images can load without a signed-in image request; uploads and changes remain admin-only.

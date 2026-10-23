@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AuthForm({ initialError, initialMode, nextPath }) {
   const router = useRouter();
   const [mode, setMode] = useState(initialMode);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [feedback, setFeedback] = useState(
     initialError
       ? { type: "error", message: initialError }
@@ -20,12 +23,29 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
     event.preventDefault();
     setFeedback(null);
 
-    if (mode === "sign-up" && password.length < 8) {
-      setFeedback({
-        type: "error",
-        message: "Choose a password with at least 8 characters.",
-      });
-      return;
+    if (mode === "sign-up") {
+      if (!fullName.trim()) {
+        setFeedback({ type: "error", message: "Enter your full name." });
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        setFeedback({ type: "error", message: "Enter a valid email address." });
+        return;
+      }
+
+      if (password.length < 8) {
+        setFeedback({
+          type: "error",
+          message: "Choose a password with at least 8 characters.",
+        });
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setFeedback({ type: "error", message: "Your passwords do not match." });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -38,6 +58,7 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
           email: email.trim(),
           password,
           options: {
+            data: { full_name: fullName.trim() },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
@@ -54,6 +75,7 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
           });
           setMode("sign-in");
           setPassword("");
+          setConfirmPassword("");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -82,6 +104,11 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
   }
 
   const isSignUp = mode === "sign-up";
+  const nextParam =
+    nextPath !== "/products" ? `next=${encodeURIComponent(nextPath)}` : "";
+  const authSwitchHref = isSignUp
+    ? `/auth${nextParam ? `?${nextParam}` : ""}`
+    : `/auth?mode=sign-up${nextParam ? `&${nextParam}` : ""}`;
 
   return (
     <section className="mx-auto max-w-lg rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -93,17 +120,38 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
       </h1>
       <p className="mt-2 text-sm text-slate-600">
         {isSignUp
-          ? "Sign up with your email to get started."
+          ? "Create an account to make every gift more personal."
           : "Sign in to your account with your email and password."}
       </p>
 
       <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+        {isSignUp ? (
+          <div>
+            <label
+              htmlFor="full-name"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Full name
+            </label>
+            <input
+              autoComplete="name"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100"
+              id="full-name"
+              maxLength={120}
+              onChange={(event) => setFullName(event.target.value)}
+              required
+              type="text"
+              value={fullName}
+            />
+          </div>
+        ) : null}
+
         <div>
           <label
             htmlFor="email"
             className="mb-2 block text-sm font-medium text-slate-700"
           >
-            Email
+            Email address
           </label>
           <input
             autoComplete="email"
@@ -134,11 +182,29 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
             value={password}
           />
           {isSignUp ? (
-            <p className="mt-2 text-xs text-slate-500">
-              Use at least 8 characters.
-            </p>
+              <p className="mt-2 text-xs text-slate-500">Use at least 8 characters.</p>
+            ) : null}
+          </div>
+
+          {isSignUp ? (
+            <div>
+              <label
+                htmlFor="confirm-password"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Confirm password
+              </label>
+              <input
+                autoComplete="new-password"
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100"
+                id="confirm-password"
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+                type="password"
+                value={confirmPassword}
+              />
+            </div>
           ) : null}
-        </div>
 
         {feedback ? (
           <p
@@ -169,16 +235,12 @@ export default function AuthForm({ initialError, initialMode, nextPath }) {
 
       <p className="mt-6 text-center text-sm text-slate-600">
         {isSignUp ? "Already have an account?" : "New to Gifterra?"}{" "}
-        <button
+        <Link
           className="font-semibold text-cyan-700 hover:text-cyan-800"
-          onClick={() => {
-            setMode(isSignUp ? "sign-in" : "sign-up");
-            setFeedback(null);
-          }}
-          type="button"
+          href={authSwitchHref}
         >
           {isSignUp ? "Sign in" : "Create an account"}
-        </button>
+        </Link>
       </p>
     </section>
   );

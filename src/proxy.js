@@ -5,7 +5,8 @@ export async function proxy(request) {
   const pathname = request.nextUrl.pathname;
   const isAuthPage = pathname === "/auth";
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isProtectedRoute = pathname === "/cart" || pathname === "/orders";
+  const isProtectedRoute =
+    pathname === "/cart" || pathname === "/orders" || pathname === "/profile";
 
   if (!isAuthPage && !isProtectedRoute && !isAdminRoute) {
     return NextResponse.next();
@@ -90,5 +91,5 @@ export async function proxy(request) {
 }
 
 export const config = {
-  matcher: ["/auth", "/auth/callback", "/cart", "/orders", "/admin/:path*"],
+  matcher: ["/auth", "/auth/callback", "/cart", "/orders", "/profile", "/admin/:path*"],
 };
