@@ -4,9 +4,8 @@ import { useState } from "react";
 import ProductGrid from "@/components/ProductGrid";
 import Sidebar from "@/components/Sidebar";
 import Search from "@/components/Search";
-import { products } from "@/data/products";
 
-export default function ProductPage() {
+export default function ProductPage({ products, loadError }) {
   const [search, setSearch] = useState("");
 
   const filteredProducts = products.filter((product) =>
@@ -44,7 +43,24 @@ export default function ProductPage() {
             </div>
           </section>
 
-          <ProductGrid products={filteredProducts} />
+          {loadError ? (
+            <p className="rounded-2xl bg-red-50 p-5 text-sm text-red-700" role="alert">
+              Products could not be loaded: {loadError}
+            </p>
+          ) : filteredProducts.length ? (
+            <ProductGrid products={filteredProducts} />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <p className="text-lg font-semibold text-slate-800">
+                {search ? "No matching gifts found" : "Our gift collection is coming soon"}
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                {search
+                  ? "Try a different search."
+                  : "Please check back soon for thoughtful gifts and gift packs."}
+              </p>
+            </div>
+          )}
 
           <section className="rounded-[16px] border border-slate-200 bg-white p-8 shadow-sm">
             <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
